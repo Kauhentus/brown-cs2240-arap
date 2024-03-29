@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+      "incremental": true,
+      "target": "ES6",
+      "baseUrl": "./src",
+      "moduleResolution": "node",
+      "allowJs": true,
+      "sourceMap": true,
+      "outDir": "./basic-finite-element",
+      "strict": true,                        
+      "noImplicitAny": true,
+      "skipLibCheck": true
+    }
+  }
+  
