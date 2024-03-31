@@ -2,6 +2,22 @@ import * as THREE from "three";
 import { OBJData } from "../util/data-structs";
 import { scene } from "./init_three";
 
+export const view_index_triangle_updateable = (data: OBJData, color: number) => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(
+        data.vertices.map(v => v.to_THREE()).flat()
+    ), 3));
+    geometry.setIndex(data.indices);
+    const material = new THREE.MeshStandardMaterial({
+        color: color,
+        flatShading: true
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    return mesh;
+}
+
 export const view_index_triangle = (data: OBJData, color: number) => {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(
@@ -14,10 +30,11 @@ export const view_index_triangle = (data: OBJData, color: number) => {
         flatShading: true
     });
     const mesh = new THREE.Mesh(geometry, material);
-
     scene.add(mesh);
 
-    view_index_triangle_wireframe(data, 0xffaa00);
+    const lines = view_index_triangle_wireframe(data, 0xffaa00);
+
+    return [mesh, lines];
 }
 
 export const view_index_triangle_wireframe = (data: OBJData, color: number) => {
@@ -39,4 +56,6 @@ export const view_index_triangle_wireframe = (data: OBJData, color: number) => {
     geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
     const lines = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({color: color}));
     scene.add(lines);
+
+    return lines;
 }

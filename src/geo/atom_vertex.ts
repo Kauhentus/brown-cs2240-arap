@@ -38,6 +38,12 @@ export class V3 {
     clone(){
         return new V3(this.x, this.y, this.z);
     }
+
+    clone_same_id(){
+        let new_v = new V3(this.x, this.y, this.z);
+        new_v.id = this.id;
+        return new_v;
+    }
     
     set_pos(x: number, y: number, z: number){
         this.x = x;

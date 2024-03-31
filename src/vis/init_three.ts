@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 export let scene: THREE.Scene; 
 export let camera: THREE.Camera;
 export let controls: OrbitControls;
+export let renderer: THREE.WebGLRenderer;
 
 export const init_three = () => {
     const screenDimension = [800, 600];
@@ -14,9 +15,10 @@ export const init_three = () => {
     
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera( 75, screenDimension[0] / screenDimension[1], 0.1, 1000 );
-    camera.position.set(0, 0.5, -3);
+    camera.position.set(0, 2, -4);
+    camera.lookAt(new THREE.Vector3(0, 1, 0));
 
-    const renderer = new THREE.WebGLRenderer({
+    renderer = new THREE.WebGLRenderer({
         canvas: mainCanvas,
         antialias: true,
     });
@@ -25,7 +27,6 @@ export const init_three = () => {
     
     renderer.setSize(screenDimension[0], screenDimension[1]);
     controls = new OrbitControls(camera, renderer.domElement);
-    
     controls.target.set(0, 1, 0);
     controls.update();
 
@@ -43,7 +44,7 @@ export const init_three = () => {
     
     const run = () => {
         renderer.render(scene, camera);
-        controls.update();
+        // controls.update();
     
         requestAnimationFrame(run);
     }
