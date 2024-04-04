@@ -36,12 +36,36 @@ which seemed to give more stable results and again, the decomposition is precomp
 
 #### Anchor 1 point translation
 
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/544410b5-35b2-4c6a-a484-78ce921d5b04
+
+
 #### Anchor 2 point rotation (bug)
+
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/551f70d3-d147-4505-9e92-35a204883545
+
 
 #### Permanent deformations (small bug)
 
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/5df5edc1-db9f-440d-a682-95eb819488a9
+
+
 #### Waving armadillo
+
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/21988c15-facf-40bc-82d6-44ec6ec3ae22
+
 
 #### Tetrahedron stable
 
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/a5955527-3be0-4568-b43d-c5f79889222a
+
+
 #### Deform large mesh
+
+
+https://github.com/Kauhentus/brown-cs2240-arap/assets/42982979/4599cac5-2e96-41f2-857a-5ee2dd3089eb
+
