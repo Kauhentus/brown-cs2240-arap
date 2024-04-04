@@ -37,7 +37,8 @@ init_three();
 // load_file('/basic-arap/meshes/tetrahedron.obj').then(async (obj_raw_data: string) => {
 // load_file('/basic-arap/meshes/cube.obj').then(async (obj_raw_data: string) => {
 // load_file('/basic-arap/meshes/sphere.obj').then(async (obj_raw_data: string) => {
-load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => {
+// load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => {
+load_file('/basic-arap/meshes/bunny.obj').then(async (obj_raw_data: string) => {
     reset_elapsed_time();
     const obj_data = parse_obj(obj_raw_data);
     const mesh = indexed_triangle_to_halfedge_mesh(obj_data.vertices, obj_data.indices);
@@ -52,7 +53,7 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
     mesh.verts.map((v, i) => v_to_i[v.id] = i);
 
     let weights: number[][];
-    let use_QR = true;
+    let use_QR = false;
     let L: any, qr: any, llt: any;
     let p: V3[], p_prime: V3[];
 
@@ -61,8 +62,8 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
         p_fixed: V3;
     }[] = [
         {
-            index: 0,
-            p_fixed: mesh.verts[0].clone().add_xyz(0, 0, 0)
+            index: 2,
+            p_fixed: mesh.verts[2].clone().add_xyz(0, 0, 0)
         },
         // {
         //     index: 20,
@@ -84,21 +85,25 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
         mesh.halfedges.forEach(he => {
             let triangle_a = [he.vert, he.next.vert, he.next.next.vert];        
             let t_a_e1 = sub_v(triangle_a[2], triangle_a[1]);
-            let t_a_e2 = sub_v(triangle_a[0], triangle_a[1]);
+            let t_a_e2 = sub_v(triangle_a[0], triangle_a[1]);      
+            // let t_a_e1 = sub_v(triangle_a[0], triangle_a[2]);
+            // let t_a_e2 = sub_v(triangle_a[1], triangle_a[2]);
     
             let triangle_b = [he.twin.vert, he.twin.next.vert, he.twin.next.next.vert];
             let t_b_e1 = sub_v(triangle_b[2], triangle_b[1]);
             let t_b_e2 = sub_v(triangle_b[0], triangle_b[1]);
+            // let t_b_e1 = sub_v(triangle_b[0], triangle_b[2]);
+            // let t_b_e2 = sub_v(triangle_b[1], triangle_b[2]);
     
             let alpha = Math.acos(dot_v(t_a_e1, t_a_e2) / (magnitude_v(t_a_e1) * magnitude_v(t_a_e2)));
             let beta = Math.acos(dot_v(t_b_e1, t_b_e2) / (magnitude_v(t_b_e1) * magnitude_v(t_b_e2)));
     
             let weight = 0.5 * (1 / Math.tan(alpha) + 1 / Math.tan(beta));
-            // weights[he.vert.id][he.next.vert.id] = weight;
             let index_i = v_to_i[he.vert.id];
             let index_j = v_to_i[he.next.vert.id]
             weights[index_i][index_j] = weight;
         });
+        console.log('w', weights);
     
         // set up L
         const L_data = new Triplet(N, N);
@@ -125,6 +130,7 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
             });
     
             L_data.addEntry(coef_i_on_L, index_i, index_i);
+            // L_data.addEntry(1, index_i, index_i)
         });
         L = SparseMatrix.fromTriplet(L_data);
 
@@ -202,6 +208,11 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
             const b = DenseMatrix.zeros(N, 3);
             p.map((i) => {
                 let index_i = v_to_i[i.id];
+
+                // b.set(p[index_i].x, index_i, 0);
+                // b.set(p[index_i].y, index_i, 1);
+                // b.set(p[index_i].z, index_i, 2);
+                // return;
         
                 if(fixed_indices.includes(index_i)){
                     const fixed_point = fixed_points.find(data => data.index === index_i) as {
@@ -229,7 +240,7 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
                         let c_k = math.matrix(fixed_point.p_fixed.to_THREE());
                         let result = math.multiply(w_ij, c_k);
                         b_sum = math.add(b_sum, result);
-                    } 
+                    }
         
                     // RHS
                     let sum_R = math.add(R_i[index_i], R_i[index_j]);
@@ -250,22 +261,22 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
             else new_p_prime = llt.solvePositiveDefinite(b);
             time_p_prime += parseFloat(get_elapsed_time(true));
             
-            const L_dense = L.toDense();
-            const L_extracted = new Array(N).fill(0).map((_, i) => new Array(N).fill(0).map((_, j) => {return L_dense.get(i, j);}));  
-            const b_extracted = new Array(N).fill(0).map((_, i) => new Array(3).fill(0).map((_, j) => {return b.get(i, j);}));  
-            console.log('$$$$$$$$$$$$$$$$$$$$$$$')
-            console.log(L, L.nRows(), L.nCols());
-            console.log(b, b.nRows(), b.nCols());
-            console.log('! Le', L_extracted)
-            console.log('! be', b_extracted)
-            console.log(new_p_prime, b.nRows(), b.nCols());
-            const p_prime_extracted = new Array(N).fill(0).map((_, i) => new Array(3).fill(0).map((_, j) => {return new_p_prime.get(i, j);}));  
-            let p_i = mesh.verts.map(v => v.to_THREE());
-            console.log('goal', p_i)
-            console.log(math.multiply(L_extracted, p_i))
-            console.log('! pe', p_prime_extracted)
-            console.log(math.multiply(L_extracted, p_prime_extracted))
-            console.log('$$$$$$$$$$$$$$$$$$$$$$$')
+            // const L_dense = L.toDense();
+            // const L_extracted = new Array(N).fill(0).map((_, i) => new Array(N).fill(0).map((_, j) => {return L_dense.get(i, j);}));  
+            // const b_extracted = new Array(N).fill(0).map((_, i) => new Array(3).fill(0).map((_, j) => {return b.get(i, j);}));  
+            // console.log('$$$$$$$$$$$$$$$$$$$$$$$')
+            // console.log(L, L.nRows(), L.nCols());
+            // console.log(b, b.nRows(), b.nCols());
+            // console.log('! Le', L_extracted)
+            // console.log('! be', b_extracted)
+            // console.log(new_p_prime, b.nRows(), b.nCols());
+            // const p_prime_extracted = new Array(N).fill(0).map((_, i) => new Array(3).fill(0).map((_, j) => {return new_p_prime.get(i, j);}));  
+            // let p_i = mesh.verts.map(v => v.to_THREE());
+            // console.log('goal', p_i)
+            // console.log(math.multiply(L_extracted, p_i))
+            // console.log('! pe', p_prime_extracted)
+            // console.log(math.multiply(L_extracted, p_prime_extracted))
+            // console.log('$$$$$$$$$$$$$$$$$$$$$$$')
     
             // update vertex positions
             for(let i = 0; i < N; i++){
@@ -327,8 +338,35 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
     // handle dragging handles
     fixed_points.forEach(fp => handle_objs[fp.index].material.color.set(0xff0000));
     const drag_controls = new DragControls(handle_objs, camera, renderer.domElement);
+    let ignore = false;
+
+    let spacebar_down = false;
+
+    document.addEventListener('keydown', (event) => {
+        if(event.key == ' ') spacebar_down = true;
+    });
+    document.addEventListener('keyup', (event) => {
+        if(event.key == ' ') spacebar_down = false;
+    });
+
     drag_controls.addEventListener('dragstart', (event) => {
+        console.log(event);
         controls.enabled = false;
+
+        const v_index = handle_objs.findIndex(obj => event.object == obj);
+        const previous_index = fixed_points.findIndex(fp => fp.index == v_index);
+        console.log(previous_index)
+        if(previous_index !== -1 && spacebar_down){
+            fixed_points.splice(previous_index, 1);
+            fixed_indices = fixed_points.map(fixed_data => fixed_data.index); 
+            handle_objs.forEach(ho => ho.material.color.set(0xaaff00));
+            fixed_points.forEach(fp => handle_objs[fp.index].material.color.set(0xff0000));
+
+            calculate_L();
+            calculate_b();
+
+            ignore = true;
+        }
     });
 
     let waiting = false;
@@ -357,6 +395,10 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
     }
     drag_controls.addEventListener('drag', (event) => {
         if(waiting) return;
+        if(ignore) return;
+
+        console.log(ignore);
+
         setTimeout(() => {
             waiting = true;
             on_drag(event, () => waiting = false);
@@ -365,5 +407,7 @@ load_file('/basic-arap/meshes/teapot.obj').then(async (obj_raw_data: string) => 
 
     drag_controls.addEventListener('dragend', (event) => {
         controls.enabled = true;
+        console.log("FALSE??")
+        ignore = false;
     });
 });
